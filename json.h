@@ -2,8 +2,9 @@
 #define JSON_H
 
 #include <string>
-#include <map> 
+#include <map>
 #include <vector>
+#include <map>
 
 class JsonValue;
 class JsonObject;
@@ -15,16 +16,18 @@ class JsonNull;
 class JsonData;
 class StringBuffer;
 
-JsonData * parseToJsonData(StringBuffer &buffer);
+JsonData *parseToJsonData(StringBuffer &buffer);
 
 static bool parseError = false;
 static std::string parseErrorString = "";
 
-bool hasError(){
+bool hasError()
+{
     return parseError;
 }
 
-std::string getError(){
+std::string getError()
+{
     return parseErrorString;
 }
 
@@ -41,75 +44,90 @@ enum class JsonType
 class StringBuffer
 {
 public:
-
     inline StringBuffer(const std::string &str)
-    : str(str), index(0)
-    {};
+        : str(str), index(0){};
 
-    inline char next(){
+    inline char next()
+    {
         if (index >= str.length())
             return '\0';
         return str[index++];
     }
 
-    inline char peek(){
+    inline char peek()
+    {
         if (index >= str.length())
             return '\0';
         return str[index];
     }
 
-    inline void skipWhitespace(){
-        while(peek() == ' '){
+    inline void skipWhitespace()
+    {
+        while (peek() == ' ')
+        {
             next();
         }
     }
 
 private:
-        const std::string & str;
-        uint index;
+    const std::string &str;
+    uint index;
 };
 
-inline bool isDelimiter(char c){
-    return c == ' ' 
-    || c == '}' 
-    || c == ']'
-    || c == ',';
-}; 
+inline bool isDelimiter(char c)
+{
+    return c == ' ' || c == '}' || c == ']' || c == ',';
+};
 
-inline char readEscape(char c){
-    switch (c){
-        case 'b': return '\b';
-        case 'f': return '\f';
-        case 'n': return '\n';
-        case 'r': return '\r';
-        case 't': return '\t';
-        case '"': return '"';
-        case '\\': return '\\';
-        default: return '\0';
+inline char readEscape(char c)
+{
+    switch (c)
+    {
+    case 'b':
+        return '\b';
+    case 'f':
+        return '\f';
+    case 'n':
+        return '\n';
+    case 'r':
+        return '\r';
+    case 't':
+        return '\t';
+    case '"':
+        return '"';
+    case '\\':
+        return '\\';
+    default:
+        return '\0';
     }
 }
 
-inline std::string parseString (StringBuffer &buffer){
+inline std::string parseString(StringBuffer &buffer)
+{
 
-    parseError = false; 
+    parseError = false;
 
     std::string str = "";
 
-    if(buffer.peek() != '"'){
+    if (buffer.peek() != '"')
+    {
         parseError = true;
         return str;
     }
 
     buffer.next();
 
-    while(buffer.peek() != '"' && buffer.peek() != '\0'){
-        char next = buffer.next(); 
+    while (buffer.peek() != '"' && buffer.peek() != '\0')
+    {
+        char next = buffer.next();
 
-        if(next == '\\'){
+        if (next == '\\')
+        {
             next = buffer.next();
             next = readEscape(next);
 
-            if(next == '\0'){
+            if (next == '\0')
+            {
                 parseError = true;
                 return str;
             }
@@ -118,7 +136,8 @@ inline std::string parseString (StringBuffer &buffer){
         str += next;
     }
 
-    if(buffer.peek() == '\0'){
+    if (buffer.peek() == '\0')
+    {
         parseError = true;
         return str;
     }
@@ -128,25 +147,30 @@ inline std::string parseString (StringBuffer &buffer){
     return str;
 }
 
-inline double parseNumber (StringBuffer &buffer){
-    
+inline double parseNumber(StringBuffer &buffer)
+{
+
     parseError = false;
 
     std::string str = "";
-    
+
     bool isNegative = false;
     bool isDecimal = false;
 
-    if(buffer.peek() == '-'){
+    if (buffer.peek() == '-')
+    {
         isNegative = true;
         buffer.next();
     }
 
-    while(!isDelimiter(buffer.peek()) && buffer.peek() != '\0'){
+    while (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
+    {
         char next = buffer.next();
 
-        if(next == '.'){
-            if(isDecimal){
+        if (next == '.')
+        {
+            if (isDecimal)
+            {
                 parseError = true;
                 return 0;
             }
@@ -156,52 +180,56 @@ inline double parseNumber (StringBuffer &buffer){
         str += next;
     }
 
-    if(isNegative)
+    if (isNegative)
         return -std::stod(str);
 
     return std::stod(str);
-    
 }
 
-inline bool parseBool (StringBuffer &buffer){
-    
+inline bool parseBool(StringBuffer &buffer)
+{
+
     parseError = false;
 
     std::string str = "";
 
-    if(buffer.peek() == 't'){
+    if (buffer.peek() == 't')
+    {
         str += buffer.next();
         str += buffer.next();
         str += buffer.next();
         str += buffer.next();
 
-        if(!isDelimiter(buffer.peek()) && buffer.peek() != '\0'){
+        if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
+        {
             parseError = true;
             return false;
         }
 
-        if(str == "true")
+        if (str == "true")
             return true;
-        
+
         parseError = true;
         return false;
     }
 
-    if(buffer.peek() == 'f'){
+    if (buffer.peek() == 'f')
+    {
         str += buffer.next();
         str += buffer.next();
         str += buffer.next();
         str += buffer.next();
         str += buffer.next();
-        
-        if(!isDelimiter(buffer.peek()) && buffer.peek() != '\0'){
+
+        if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
+        {
             parseError = true;
             return false;
         }
 
-        if(str == "false")
+        if (str == "false")
             return false;
-        
+
         parseError = true;
         return false;
     }
@@ -210,8 +238,9 @@ inline bool parseBool (StringBuffer &buffer){
     return false;
 }
 
-bool parseNull (StringBuffer &buffer){
-    
+bool parseNull(StringBuffer &buffer)
+{
+
     parseError = false;
 
     std::string str = "";
@@ -221,21 +250,22 @@ bool parseNull (StringBuffer &buffer){
     str += buffer.next();
     str += buffer.next();
 
-    if(!isDelimiter(buffer.peek()) && buffer.peek() != '\0'){
+    if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
+    {
         parseError = true;
         return false;
     }
 
-    if(str == "null")
+    if (str == "null")
         return true;
-    
+
     parseError = true;
     return false;
 }
 
 class JsonData
 {
-public: 
+public:
     virtual std::string asString()
     {
         return "";
@@ -251,14 +281,14 @@ public:
         return false;
     };
 
-    virtual JsonData *asObject()
+    virtual JsonObject *asObject()
     {
         return nullptr;
     };
 
-    virtual std::vector<JsonData*> asArray()
+    virtual std::vector<JsonData *> asArray()
     {
-        return std::vector<JsonData*>();
+        return std::vector<JsonData *>();
     };
 
     virtual JsonData *operator[](const std::string &key)
@@ -287,10 +317,11 @@ public:
 class JsonString : public JsonData
 {
 public:
-
-    inline JsonString(StringBuffer &buffer) : buffer(buffer){
+    inline JsonString(StringBuffer &buffer) : buffer(buffer)
+    {
         str = parseString(buffer);
-        if(parseError){
+        if (parseError)
+        {
             parseErrorString = "Error parsing string";
         }
     };
@@ -306,18 +337,18 @@ public:
     };
 
 private:
-
     StringBuffer &buffer;
-    std::string str; 
+    std::string str;
 };
 
 class JsonNumber : public JsonData
 {
 public:
-
-    inline JsonNumber(StringBuffer &buffer) : buffer(buffer){
+    inline JsonNumber(StringBuffer &buffer) : buffer(buffer)
+    {
         num = parseNumber(buffer);
-        if(parseError){
+        if (parseError)
+        {
             parseErrorString = "Error parsing number";
         }
     };
@@ -333,18 +364,18 @@ public:
     };
 
 private:
-    
-        StringBuffer &buffer;
-        double num; 
+    StringBuffer &buffer;
+    double num;
 };
 
 class JsonBool : public JsonData
 {
 public:
-
-    inline JsonBool(StringBuffer &buffer) : buffer(buffer){
+    inline JsonBool(StringBuffer &buffer) : buffer(buffer)
+    {
         b = parseBool(buffer);
-        if(parseError){
+        if (parseError)
+        {
             parseErrorString = "Error parsing bool";
         }
     };
@@ -360,17 +391,18 @@ public:
     };
 
 private:
-        StringBuffer &buffer;
-        bool b;
+    StringBuffer &buffer;
+    bool b;
 };
 
 class JsonNull : public JsonData
 {
 
 public:
-
-    inline JsonNull(StringBuffer &buffer) : buffer(buffer){
-        if(!parseNull(buffer)){
+    inline JsonNull(StringBuffer &buffer) : buffer(buffer)
+    {
+        if (!parseNull(buffer))
+        {
             parseError = true;
             parseErrorString = "Error parsing null";
         }
@@ -382,78 +414,60 @@ public:
     };
 
 private:
-        StringBuffer &buffer;
-
-};
-
-class JsonObject : public JsonData
-{
-public:
-
-    inline JsonObject(StringBuffer &buffer) : buffer(buffer){
-    };
-
-    inline JsonData *operator[](const std::string &key) override
-    {
-    };
-
-    inline JsonType getType() override
-    {
-        return JsonType::JSON_OBJECT;
-    };
-
-    inline int size() override
-    {
-    };
-
-private:
-
     StringBuffer &buffer;
-    std::map<std::string, JsonData *> data;
-
 };
 
 class JsonArray : public JsonData
 {
 public:
+    inline JsonArray(StringBuffer &buffer) : buffer(buffer)
+    {
 
-    inline JsonArray(StringBuffer &buffer) : buffer(buffer){
+        buffer.skipWhitespace(); // skip whitespace
 
-        buffer.skipWhitespace(); //skip whitespace
-
-        if(buffer.next() != '['){
+        if (buffer.next() != '[')
+        {
             parseError = true;
             parseErrorString = "Error parsing array";
             return;
         }
 
-        buffer.skipWhitespace(); //skip whitespace
+        buffer.skipWhitespace(); // skip whitespace
 
-        while(buffer.peek() != ']' ){
+        while (buffer.peek() != ']')
+        {
             data.push_back(parseToJsonData(buffer));
-            if(parseError){
+            if (parseError)
+            {
                 parseErrorString = "Error parsing array";
                 return;
             }
-            buffer.skipWhitespace(); //skip whitespace
+            buffer.skipWhitespace(); // skip whitespace
 
-            if(buffer.peek() == ','){
+            if (buffer.peek() == ',')
+            {
                 buffer.next();
             }
-            else if(buffer.peek() != ']'){
+            else if (buffer.peek() != ']')
+            {
                 parseError = true;
                 parseErrorString = "Error parsing array";
                 return;
             }
-            else{
+            else
+            {
                 break;
             }
 
-            buffer.skipWhitespace(); 
+            buffer.skipWhitespace();
         }
 
-        buffer.next(); //skip ']'
+        buffer.next(); // skip ']'
+    };
 
+    inline std::vector<JsonData *> asArray() override
+    {
+        return data;
     };
 
     inline JsonData *operator[](int index) override
@@ -471,45 +485,164 @@ public:
         return data.size();
     };
 
+    inline ~JsonArray() override
+    {
+        for (auto &d : data)
+        {
+            delete d;
+        }
+    };
+
 private:
-    
-        StringBuffer &buffer;
-        std::vector<JsonData *> data;
-    
+    StringBuffer &buffer;
+    std::vector<JsonData *> data;
 };
 
-inline JsonData * parseToJsonData(StringBuffer &buffer){
-        
-        parseError = false;
+class JsonObject : public JsonData
+{
 
-        buffer.skipWhitespace(); //skip whitespace
-    
-        if(buffer.peek() == '"'){
-            return new JsonString(buffer);
+public:
+    inline JsonObject(StringBuffer &buffer) : buffer(buffer)
+    {
+        parseObject(buffer);
+    };
+
+    inline JsonData *operator[](const std::string &key) override
+    {
+        return data[key];
+    };
+
+    inline JsonType getType() override
+    {
+        return JsonType::JSON_OBJECT;
+    };
+
+    inline int size() override
+    {
+        return data.size();
+    };
+
+    inline JsonObject *asObject() override
+    {
+        return this;
+    };
+
+    inline ~JsonObject() override
+    {
+        for (auto &d : data)
+        {
+            delete d.second;
         }
-    
-        if(buffer.peek() == '-' || (buffer.peek() >= '0' && buffer.peek() <= '9')){
-            return new JsonNumber(buffer);
+    };
+
+private:
+    inline void parseObject(StringBuffer &buffer)
+    {
+
+        buffer.skipWhitespace(); // skip whitespace
+
+        if (buffer.next() != '{')
+        {
+            parseError = true;
+            parseErrorString = "Error parsing object";
+            return;
         }
-    
-        if(buffer.peek() == 't' || buffer.peek() == 'f'){
-            return new JsonBool(buffer);
+
+        buffer.skipWhitespace(); // skip whitespace
+
+        while (buffer.peek() != '}')
+        {
+            std::string key = parseString(buffer);
+            if (parseError)
+            {
+                parseErrorString = "Error parsing object";
+                return;
+            }
+
+            buffer.skipWhitespace(); // skip whitespace
+
+            if (buffer.next() != ':')
+            {
+                parseError = true;
+                parseErrorString = "Error parsing object";
+                return;
+            }
+
+            buffer.skipWhitespace(); // skip whitespace
+
+            data[key] = parseToJsonData(buffer);
+            if (parseError)
+            {
+                parseErrorString = "Error parsing object";
+                return;
+            }
+
+            buffer.skipWhitespace(); // skip whitespace
+
+            if (buffer.peek() == ',')
+            {
+                buffer.next();
+            }
+            else if (buffer.peek() != '}')
+            {
+                parseError = true;
+                parseErrorString = "Error parsing object";
+                return;
+            }
+            else
+            {
+                break;
+            }
+
+            buffer.skipWhitespace();
         }
-    
-        if(buffer.peek() == 'n'){
-            return new JsonNull(buffer);
-        }
-    
-        if(buffer.peek() == '{'){
-            return new JsonObject(buffer);
-        }
-    
-        if(buffer.peek() == '['){
-            return new JsonArray(buffer);
-        }
-    
-        parseError = true;
-        return nullptr;
+
+        buffer.next(); // skip '}'
+    }
+
+    StringBuffer &buffer;
+    std::map<std::string, JsonData *> data;
+};
+
+inline JsonData *parseToJsonData(StringBuffer &buffer)
+{
+
+    parseError = false;
+
+    buffer.skipWhitespace(); // skip whitespace
+
+    if (buffer.peek() == '"')
+    {
+        return new JsonString(buffer);
+    }
+
+    if (buffer.peek() == '-' || (buffer.peek() >= '0' && buffer.peek() <= '9'))
+    {
+        return new JsonNumber(buffer);
+    }
+
+    if (buffer.peek() == 't' || buffer.peek() == 'f')
+    {
+        return new JsonBool(buffer);
+    }
+
+    if (buffer.peek() == 'n')
+    {
+        return new JsonNull(buffer);
+    }
+
+    if (buffer.peek() == '{')
+    {
+        return new JsonObject(buffer);
+    }
+
+    if (buffer.peek() == '[')
+    {
+        return new JsonArray(buffer);
+    }
+
+    parseError = true;
+    return nullptr;
 }
 
 #endif
