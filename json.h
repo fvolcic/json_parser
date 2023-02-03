@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <map>
+#include <fstream>
 
 class JsonValue;
 class JsonObject;
@@ -311,6 +312,10 @@ public:
         return JsonType::JSON_NULL;
     };
 
+    virtual std::string emit(){
+        return "";
+    }
+
     virtual ~JsonData(){};
 };
 
@@ -335,6 +340,11 @@ public:
     {
         return JsonType::JSON_STRING;
     };
+
+    inline std::string emit() override
+    {
+        return "\"" + str + "\"";
+    }
 
 private:
     StringBuffer &buffer;
@@ -363,6 +373,11 @@ public:
         return JsonType::JSON_NUMBER;
     };
 
+    inline std::string emit() override
+    {
+        return std::to_string(num);
+    }
+
 private:
     StringBuffer &buffer;
     double num;
@@ -390,6 +405,13 @@ public:
         return JsonType::JSON_BOOL;
     };
 
+    inline std::string emit() override
+    {
+        if (b)
+            return "true";
+        return "false";
+    }
+
 private:
     StringBuffer &buffer;
     bool b;
@@ -412,6 +434,11 @@ public:
     {
         return JsonType::JSON_NULL;
     };
+
+    inline std::string emit() override
+    {
+        return "null";
+    }
 
 private:
     StringBuffer &buffer;
@@ -493,6 +520,19 @@ public:
         }
     };
 
+    inline std::string emit() override
+    {
+        std::string str = "[";
+        for (int i = 0; i < data.size(); i++)
+        {
+            str += data[i]->emit();
+            if (i != data.size() - 1)
+                str += ",";
+        }
+        str += "]";
+        return str;
+    }
+
 private:
     StringBuffer &buffer;
     std::vector<JsonData *> data;
@@ -534,6 +574,21 @@ public:
             delete d.second;
         }
     };
+
+    inline std::string emit() override
+    {
+        std::string str = "{";
+        int i = 0;
+        for (auto &d : data)
+        {
+            str += "\"" + d.first + "\":" + d.second->emit();
+            if (i != data.size() - 1)
+                str += ",";
+            i++;
+        }
+        str += "}";
+        return str;
+    }
 
 private:
     inline void parseObject(StringBuffer &buffer)
@@ -643,6 +698,57 @@ inline JsonData *parseToJsonData(StringBuffer &buffer)
 
     parseError = true;
     return nullptr;
+}
+
+inline JsonData * JSON(const std::string &str)
+{
+    StringBuffer buffer(str);
+    return parseToJsonData(buffer);
+}
+
+inline JsonData * JSON(const char *str)
+{
+    StringBuffer buffer(str);
+    return parseToJsonData(buffer);
+}
+
+inline JsonData * JSON(const char *str, int len)
+{
+ 
+    std::string s(str, len);
+    StringBuffer buffer(s);
+    return parseToJsonData(buffer);
+}
+
+inline JsonData * JSON(std::ifstream &file)
+{
+    std::string str((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+    StringBuffer buffer(str);
+    return parseToJsonData(buffer);
+}
+
+inline JsonData * JSON(std::istream &stream)
+{
+    std::string str((std::istreambuf_iterator<char>(stream)),
+                    std::istreambuf_iterator<char>());
+    StringBuffer buffer(str);
+    return parseToJsonData(buffer);
+}
+
+inline JsonData * JSON_loadf(std::string filename){
+    std::ifstream file(filename);
+    return JSON(file);
+}
+
+inline void JSON_dumpf(JsonData *data, std::string filename){
+    std::ofstream file(filename);
+    file << data->emit();
+    file.close();
+}
+
+inline std::string JSON_emit(JsonData *data){
+    return data->emit();
 }
 
 #endif
