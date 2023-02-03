@@ -54,3 +54,17 @@ JsonData->asArray()->get(int index);
 
 // Get the size of the JSON array or object
 JsonData->size();
+
+// Turn values into JSON data
+toJsonData(bool value);
+toJsonData(int value);
+toJsonData(double value);
+toJsonData(std::string value);
+
+// Set values
+JsonData->set(std::string key, JsonData * value);
+JsonData->set(int index, JsonData * value);
+
+// Push and pop values from arrays
+JsonData->asArray()->push(JsonData * value);
+JsonData->asArray()->pop();

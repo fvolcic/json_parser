@@ -22,6 +22,7 @@ JsonData *parseToJsonData(StringBuffer &buffer);
 static bool parseError = false;
 static std::string parseErrorString = "";
 
+
 bool hasError()
 {
     return parseError;
@@ -45,6 +46,9 @@ enum class JsonType
 class StringBuffer
 {
 public:
+
+    inline StringBuffer() : str(""), index(0){};
+
     inline StringBuffer(const std::string &str)
         : str(str), index(0){};
 
@@ -74,6 +78,8 @@ private:
     const std::string &str;
     uint index;
 };
+static StringBuffer emptyBuffer;
+
 
 inline bool isDelimiter(char c)
 {
@@ -110,7 +116,7 @@ inline std::string parseString(StringBuffer &buffer)
 
     std::string str = "";
 
-    if (buffer.peek() != '"')
+    if (buffer.peek() != '"' && buffer.peek() != '\'')
     {
         parseError = true;
         return str;
@@ -118,7 +124,7 @@ inline std::string parseString(StringBuffer &buffer)
 
     buffer.next();
 
-    while (buffer.peek() != '"' && buffer.peek() != '\0')
+    while (buffer.peek() != '\'' && buffer.peek() != '"' && buffer.peek() != '\0')
     {
         char next = buffer.next();
 
@@ -267,6 +273,9 @@ bool parseNull(StringBuffer &buffer)
 class JsonData
 {
 public:
+
+    JsonData(){}
+
     virtual std::string asString()
     {
         return "";
@@ -302,12 +311,29 @@ public:
         return nullptr;
     };
 
-    virtual JsonData * get(const std::string &key)
+    virtual JsonData *get(const std::string &key)
     {
         return nullptr;
     };
 
-    virtual JsonData * get(int index)
+    virtual JsonData *get(int index)
+    {
+        return nullptr;
+    };
+
+    virtual JsonData *set(const std::string &key, JsonData *data)
+    {
+        return nullptr;
+    };
+
+    virtual JsonData *set(int index, JsonData *data)
+    {
+        return nullptr;
+    };
+
+    virtual void push(JsonData *data){};
+
+    virtual JsonData *pop()
     {
         return nullptr;
     };
@@ -322,8 +348,25 @@ public:
         return JsonType::JSON_NULL;
     };
 
-    virtual std::string emit(){
+    virtual std::string emit()
+    {
         return "";
+    }
+
+    virtual void operator=(JsonData *data)
+    {
+    }
+
+    virtual void operator=(std::string str)
+    {
+    }
+
+    virtual void operator=(double num)
+    {
+    }
+
+    virtual void operator=(bool b)
+    {
     }
 
     virtual ~JsonData(){};
@@ -332,6 +375,9 @@ public:
 class JsonString : public JsonData
 {
 public:
+
+    inline JsonString(std::string str) : buffer(emptyBuffer), str(str){};
+
     inline JsonString(StringBuffer &buffer) : buffer(buffer)
     {
         str = parseString(buffer);
@@ -351,6 +397,11 @@ public:
         return JsonType::JSON_STRING;
     };
 
+    inline void operator=(std::string str) override
+    {
+        this->str = str;
+    }
+
     inline std::string emit() override
     {
         return "\"" + str + "\"";
@@ -364,6 +415,9 @@ private:
 class JsonNumber : public JsonData
 {
 public:
+
+    inline JsonNumber(double num) : buffer(emptyBuffer), num(num){};
+
     inline JsonNumber(StringBuffer &buffer) : buffer(buffer)
     {
         num = parseNumber(buffer);
@@ -383,6 +437,11 @@ public:
         return JsonType::JSON_NUMBER;
     };
 
+    inline void operator=(double num) override
+    {
+        this->num = num;
+    }
+
     inline std::string emit() override
     {
         return std::to_string(num);
@@ -396,6 +455,9 @@ private:
 class JsonBool : public JsonData
 {
 public:
+
+    inline JsonBool(bool b) : buffer(emptyBuffer), b(b){};
+
     inline JsonBool(StringBuffer &buffer) : buffer(buffer)
     {
         b = parseBool(buffer);
@@ -415,6 +477,11 @@ public:
         return JsonType::JSON_BOOL;
     };
 
+    inline void operator=(bool b) override
+    {
+        this->b = b;
+    }
+
     inline std::string emit() override
     {
         if (b)
@@ -431,6 +498,9 @@ class JsonNull : public JsonData
 {
 
 public:
+
+    inline JsonNull() : buffer(emptyBuffer){};
+
     inline JsonNull(StringBuffer &buffer) : buffer(buffer)
     {
         if (!parseNull(buffer))
@@ -457,6 +527,9 @@ private:
 class JsonArray : public JsonData
 {
 public:
+
+    inline JsonArray() : buffer(emptyBuffer){};
+
     inline JsonArray(StringBuffer &buffer) : buffer(buffer)
     {
 
@@ -512,7 +585,7 @@ public:
         return data[index];
     };
 
-    inline JsonData * get(int index) override
+    inline JsonData *get(int index) override
     {
         return data[index];
     };
@@ -527,6 +600,18 @@ public:
         return data.size();
     };
 
+    inline void push(JsonData *data) override
+    {
+        this->data.push_back(data);
+    };
+
+    inline JsonData * pop() override
+    {
+        JsonData *data = this->data.back();
+        this->data.pop_back();
+        return data;
+    };
+ 
     inline ~JsonArray() override
     {
         for (auto &d : data)
@@ -557,6 +642,9 @@ class JsonObject : public JsonData
 {
 
 public:
+
+    inline JsonObject() : buffer(emptyBuffer){};
+
     inline JsonObject(StringBuffer &buffer) : buffer(buffer)
     {
         parseObject(buffer);
@@ -567,9 +655,15 @@ public:
         return data[key];
     };
 
-    inline JsonData * get(const std::string &key) override
+    inline JsonData *get(const std::string &key) override
     {
         return data[key];
+    };
+
+    inline JsonData * set(const std::string &key, JsonData *value) override
+    {
+        data[key] = value;
+        return value;
     };
 
     inline JsonType getType() override
@@ -720,27 +814,27 @@ inline JsonData *parseToJsonData(StringBuffer &buffer)
     return nullptr;
 }
 
-inline JsonData * JSON(const std::string &str)
+inline JsonData *JSON(const std::string &str)
 {
     StringBuffer buffer(str);
     return parseToJsonData(buffer);
 }
 
-inline JsonData * JSON(const char *str)
+inline JsonData *JSON(const char *str)
 {
     StringBuffer buffer(str);
     return parseToJsonData(buffer);
 }
 
-inline JsonData * JSON(const char *str, int len)
+inline JsonData *JSON(const char *str, int len)
 {
- 
+
     std::string s(str, len);
     StringBuffer buffer(s);
     return parseToJsonData(buffer);
 }
 
-inline JsonData * JSON(std::ifstream &file)
+inline JsonData *JSON(std::ifstream &file)
 {
     std::string str((std::istreambuf_iterator<char>(file)),
                     std::istreambuf_iterator<char>());
@@ -748,7 +842,7 @@ inline JsonData * JSON(std::ifstream &file)
     return parseToJsonData(buffer);
 }
 
-inline JsonData * JSON(std::istream &stream)
+inline JsonData *JSON(std::istream &stream)
 {
     std::string str((std::istreambuf_iterator<char>(stream)),
                     std::istreambuf_iterator<char>());
@@ -756,19 +850,53 @@ inline JsonData * JSON(std::istream &stream)
     return parseToJsonData(buffer);
 }
 
-inline JsonData * JSON_loadf(std::string filename){
+inline JsonData *JSON_loadf(std::string filename)
+{
     std::ifstream file(filename);
     return JSON(file);
 }
 
-inline void JSON_dumpf(JsonData *data, std::string filename){
+inline void JSON_dumpf(JsonData *data, std::string filename)
+{
     std::ofstream file(filename);
     file << data->emit();
     file.close();
 }
 
-inline std::string JSON_emit(JsonData *data){
+inline std::string JSON_emit(JsonData *data)
+{
     return data->emit();
+}
+
+JsonData * toJsonData(const std::string &str)
+{
+   return new JsonString(str);
+}
+
+JsonData * toJsonData(const char *str)
+{
+   return new JsonString(str);
+}
+
+JsonData * toJsonData(double number)
+{
+   return new JsonNumber(number);
+}
+
+JsonData * toJsonData(int number)
+{
+   return new JsonNumber(number);
+}
+
+JsonData * toJsonData(bool boolean)
+{
+   return new JsonBool(boolean);
+}
+
+JsonData * operator ""_json(const char *str, size_t size)
+{
+    StringBuffer buffer(str);
+    return parseToJsonData(buffer);
 }
 
 #endif
