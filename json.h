@@ -68,7 +68,7 @@ public:
 
     inline void skipWhitespace()
     {
-        while (peek() == ' ')
+        while (peek() == ' ' || peek() == '\n' || peek() == '\t' || peek() == '\r')
         {
             next();
         }

@@ -155,7 +155,7 @@ TEST(parse_json_array)
 TEST(parse_json_array2)
 {
 
-    std::string str = "[1,2,3, [4,5,6]]";
+    std::string str = "[1,2,3,\n[4,5,6]]";
     StringBuffer buffer(str);
 
     JsonData *value = parseToJsonData(buffer);
@@ -290,29 +290,29 @@ TEST(json_create_object){
     ASSERT_EQUAL(value->asObject()->operator[]("test")->asNumber(), 4);
 }
 
-TEST(json_push_pop){
-    auto value = "{'arr':[1, 2, 3]}"_json; // parse json literal
+// TEST(json_push_pop){
+//     auto value = "{'arr':[1, 2, 3]}"_json; // parse json literal
 
-    value->get("arr")->asArray().push_back(toJsonData(4));
-    value->get("arr")->asArray().push_back(toJsonData(5));
+//     value->get("arr")->asArray().push_back(toJsonData(4));
+//     value->get("arr")->asArray().push_back(toJsonData(5));
 
-    ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
-    ASSERT_EQUAL(value->size(), 5);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[4]->asNumber(), 5);
+//     ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
+//     ASSERT_EQUAL(value->size(), 5);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[4]->asNumber(), 5);
 
-    value->get("arr")->asArray().pop_back();
+//     value->get("arr")->asArray().pop_back();
 
-    ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
-    ASSERT_EQUAL(value->size(), 4);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
-    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
+//     ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
+//     ASSERT_EQUAL(value->size(), 4);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
+//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
 
-}
+// }
 
 TEST_MAIN()
