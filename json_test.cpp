@@ -1,5 +1,5 @@
 #include "unit_test_framework.h"
-#include "jsonr.h"
+#include "json.h"
 
 TEST(parse_string_test){
     std::string str = "\"hello world\"";
@@ -76,6 +76,69 @@ TEST(parse_null){
     StringBuffer buffer(str);
     bool value = parseNull(buffer);
     ASSERT_EQUAL(value, true);
+}
+
+TEST(parse_json_number){
+
+    std::string str = "123";
+    StringBuffer buffer(str);
+
+    JsonData * value = parseToJsonData(buffer);
+
+    ASSERT_EQUAL(value->getType(), JsonType::JSON_NUMBER);
+    ASSERT_EQUAL(value->asNumber(), 123);
+
+}
+
+TEST(parse_json_string){
+
+    std::string str = "\"hello world\"";
+    StringBuffer buffer(str);
+
+    JsonData * value = parseToJsonData(buffer);
+
+    ASSERT_EQUAL(value->getType(), JsonType::JSON_STRING);
+    ASSERT_EQUAL(value->asString(), "hello world");
+
+}
+
+TEST(parse_json_bool){
+    
+        std::string str = "true";
+        StringBuffer buffer(str);
+    
+        JsonData * value = parseToJsonData(buffer);
+    
+        ASSERT_EQUAL(value->getType(), JsonType::JSON_BOOL);
+        ASSERT_EQUAL(value->asBool(), true);
+    
+}
+
+TEST(parse_json_bool_2){
+    
+        std::string str = "false";
+        StringBuffer buffer(str);
+    
+        JsonData * value = parseToJsonData(buffer);
+    
+        ASSERT_EQUAL(value->getType(), JsonType::JSON_BOOL);
+        ASSERT_EQUAL(value->asBool(), false);
+    
+}
+
+TEST(parse_json_array){
+    
+        std::string str = "[1,2,3]";
+        StringBuffer buffer(str);
+    
+        JsonData * value = parseToJsonData(buffer);
+    
+        ASSERT_EQUAL(value->getType(), JsonType::JSON_ARRAY);
+        ASSERT_EQUAL(value->asArray().size(), 3);
+        ASSERT_EQUAL(value->asArray()[0]->asNumber(), 1);
+        ASSERT_EQUAL(value->asArray()[1]->asNumber(), 2);
+        ASSERT_EQUAL(value->asArray()[2]->asNumber(), 3);
+    
 }
 
 TEST_MAIN()

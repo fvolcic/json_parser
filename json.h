@@ -2,6 +2,20 @@
 #define JSON_H
 
 #include <string>
+#include <map> 
+#include <vector>
+
+class JsonValue;
+class JsonObject;
+class JsonArray;
+class JsonString;
+class JsonNumber;
+class JsonBool;
+class JsonNull;
+class JsonData;
+class StringBuffer;
+
+JsonData * parseToJsonData(StringBuffer &buffer);
 
 static bool parseError = false;
 static std::string parseErrorString = "";
@@ -42,6 +56,12 @@ public:
         if (index >= str.length())
             return '\0';
         return str[index];
+    }
+
+    inline void skipWhitespace(){
+        while(peek() == ' '){
+            next();
+        }
     }
 
 private:
@@ -236,9 +256,9 @@ public:
         return nullptr;
     };
 
-    virtual JsonData *asArray()
+    virtual std::vector<JsonData*> asArray()
     {
-        return nullptr;
+        return std::vector<JsonData*>();
     };
 
     virtual JsonData *operator[](const std::string &key)
@@ -366,6 +386,130 @@ private:
 
 };
 
+class JsonObject : public JsonData
+{
+public:
 
+    inline JsonObject(StringBuffer &buffer) : buffer(buffer){
+    };
+
+    inline JsonData *operator[](const std::string &key) override
+    {
+    };
+
+    inline JsonType getType() override
+    {
+        return JsonType::JSON_OBJECT;
+    };
+
+    inline int size() override
+    {
+    };
+
+private:
+
+    StringBuffer &buffer;
+    std::map<std::string, JsonData *> data;
+
+};
+
+class JsonArray : public JsonData
+{
+public:
+
+    inline JsonArray(StringBuffer &buffer) : buffer(buffer){
+
+        buffer.skipWhitespace(); //skip whitespace
+
+        if(buffer.next() != '['){
+            parseError = true;
+            parseErrorString = "Error parsing array";
+            return;
+        }
+
+        buffer.skipWhitespace(); //skip whitespace
+
+        while(buffer.peek() != ']' ){
+            data.push_back(parseToJsonData(buffer));
+            if(parseError){
+                parseErrorString = "Error parsing array";
+                return;
+            }
+            buffer.skipWhitespace(); //skip whitespace
+
+            if(buffer.peek() == ','){
+                buffer.next();
+            }
+            else if(buffer.peek() != ']'){
+                parseError = true;
+                parseErrorString = "Error parsing array";
+                return;
+            }
+            else{
+                break;
+            }
+
+            buffer.skipWhitespace(); 
+        }
+
+        buffer.next(); //skip ']'
+
+    };
+
+    inline JsonData *operator[](int index) override
+    {
+        return data[index];
+    };
+
+    inline JsonType getType() override
+    {
+        return JsonType::JSON_ARRAY;
+    };
+
+    inline int size() override
+    {
+        return data.size();
+    };
+
+private:
+    
+        StringBuffer &buffer;
+        std::vector<JsonData *> data;
+    
+};
+
+inline JsonData * parseToJsonData(StringBuffer &buffer){
+        
+        parseError = false;
+
+        buffer.skipWhitespace(); //skip whitespace
+    
+        if(buffer.peek() == '"'){
+            return new JsonString(buffer);
+        }
+    
+        if(buffer.peek() == '-' || (buffer.peek() >= '0' && buffer.peek() <= '9')){
+            return new JsonNumber(buffer);
+        }
+    
+        if(buffer.peek() == 't' || buffer.peek() == 'f'){
+            return new JsonBool(buffer);
+        }
+    
+        if(buffer.peek() == 'n'){
+            return new JsonNull(buffer);
+        }
+    
+        if(buffer.peek() == '{'){
+            return new JsonObject(buffer);
+        }
+    
+        if(buffer.peek() == '['){
+            return new JsonArray(buffer);
+        }
+    
+        parseError = true;
+        return nullptr;
+}
 
 #endif
