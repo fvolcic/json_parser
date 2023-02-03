@@ -302,6 +302,16 @@ public:
         return nullptr;
     };
 
+    virtual JsonData * get(const std::string &key)
+    {
+        return nullptr;
+    };
+
+    virtual JsonData * get(int index)
+    {
+        return nullptr;
+    };
+
     virtual int size()
     {
         return 0;
@@ -502,6 +512,11 @@ public:
         return data[index];
     };
 
+    inline JsonData * get(int index) override
+    {
+        return data[index];
+    };
+
     inline JsonType getType() override
     {
         return JsonType::JSON_ARRAY;
@@ -548,6 +563,11 @@ public:
     };
 
     inline JsonData *operator[](const std::string &key) override
+    {
+        return data[key];
+    };
+
+    inline JsonData * get(const std::string &key) override
     {
         return data[key];
     };
