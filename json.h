@@ -80,10 +80,14 @@ private:
 };
 static StringBuffer emptyBuffer;
 
+inline bool isWhitespace(char c){
+    return c == ' ' || c == '\n' || c == '\t' || c == '\r';
+}
 
 inline bool isDelimiter(char c)
 {
-    return c == ' ' || c == '}' || c == ']' || c == ',';
+
+    return isWhitespace(c) || c == '}' || c == ']' || c == ',';
 };
 
 inline char readEscape(char c)
@@ -115,6 +119,7 @@ inline std::string parseString(StringBuffer &buffer)
     parseError = false;
 
     std::string str = "";
+    char stringEnd;
 
     if (buffer.peek() != '"' && buffer.peek() != '\'')
     {
@@ -122,23 +127,23 @@ inline std::string parseString(StringBuffer &buffer)
         return str;
     }
 
-    buffer.next();
+    stringEnd = buffer.next();
 
-    while (buffer.peek() != '\'' && buffer.peek() != '"' && buffer.peek() != '\0')
+    while (buffer.peek() != stringEnd && buffer.peek() != '\0')
     {
         char next = buffer.next();
 
-        if (next == '\\')
-        {
-            next = buffer.next();
-            next = readEscape(next);
+        // if (next == '\\')
+        // {
+        //     next = buffer.next();
+        //     next = readEscape(next);
 
-            if (next == '\0')
-            {
-                parseError = true;
-                return str;
-            }
-        }
+        //     if (next == '\0')
+        //     {
+        //         parseError = true;
+        //         return str;
+        //     }
+        // }
 
         str += next;
     }
@@ -210,6 +215,10 @@ inline bool parseBool(StringBuffer &buffer)
         if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
         {
             parseError = true;
+            parseError = 
+                printf("Expected value [true] followed by [delimiter] or ['\\0']. Got [%s] followed by [%c]"
+                , str.data(), buffer.peek()
+                );
             return false;
         }
 
@@ -217,6 +226,7 @@ inline bool parseBool(StringBuffer &buffer)
             return true;
 
         parseError = true;
+        parseError = printf("| Expected [true] got [%s]. |", str.data());
         return false;
     }
 
@@ -231,6 +241,10 @@ inline bool parseBool(StringBuffer &buffer)
         if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
         {
             parseError = true;
+            parseError = 
+                printf("| Expected value [false] followed by [delimiter]. Got [%s] followed by [%c]. |"
+                , str.data(), buffer.peek()
+                );
             return false;
         }
 
@@ -242,6 +256,7 @@ inline bool parseBool(StringBuffer &buffer)
     }
 
     parseError = true;
+    parseError = printf("| Expected [true] got [%s]. |", str.data());
     return false;
 }
 
@@ -463,7 +478,7 @@ public:
         b = parseBool(buffer);
         if (parseError)
         {
-            parseErrorString = "Error parsing bool";
+            parseErrorString = printf("| Error parsing bool. Reason: %s. |", parseErrorString.data());
         }
     };
 
@@ -713,7 +728,7 @@ private:
         if (buffer.next() != '{')
         {
             parseError = true;
-            parseErrorString = "Error parsing object";
+            parseErrorString = "Error parsing object. Expected {";
             return;
         }
 
@@ -724,7 +739,7 @@ private:
             std::string key = parseString(buffer);
             if (parseError)
             {
-                parseErrorString = "Error parsing object";
+                parseErrorString = printf("Error parsing object. Invalid Key. | %s", parseErrorString.data());
                 return;
             }
 
@@ -733,7 +748,7 @@ private:
             if (buffer.next() != ':')
             {
                 parseError = true;
-                parseErrorString = "Error parsing object";
+                parseErrorString = "Error parsing object. Expected ':' character between key and value.";
                 return;
             }
 
@@ -742,7 +757,7 @@ private:
             data[key] = parseToJsonData(buffer);
             if (parseError)
             {
-                parseErrorString = "Error parsing object";
+                parseErrorString = printf("Error parsing object. Value error for key=[%s]. | %s", key.data(), parseErrorString.data());
                 return;
             }
 
@@ -755,7 +770,7 @@ private:
             else if (buffer.peek() != '}')
             {
                 parseError = true;
-                parseErrorString = "Error parsing object";
+                parseErrorString = "Error parsing object. Expected ending '}'";
                 return;
             }
             else

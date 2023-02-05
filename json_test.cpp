@@ -113,6 +113,15 @@ TEST(parse_json_string)
     ASSERT_EQUAL(value->asString(), "hello world");
 }
 
+TEST(parse_json_string2){
+    std::string str = "\"'\"";
+    StringBuffer buffer(str);
+
+    JsonData * value = parseToJsonData(buffer);
+    ASSERT_EQUAL(value->getType(), JsonType::JSON_STRING);
+    ASSERT_EQUAL(value->asString(), "'");
+}
+
 TEST(parse_json_bool)
 {
 
