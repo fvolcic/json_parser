@@ -133,17 +133,20 @@ inline std::string parseString(StringBuffer &buffer)
     {
         char next = buffer.next();
 
-        // if (next == '\\')
-        // {
-        //     next = buffer.next();
-        //     next = readEscape(next);
+        if (next == '\\')
+        {
+            next = buffer.next();
 
-        //     if (next == '\0')
-        //     {
-        //         parseError = true;
-        //         return str;
-        //     }
-        // }
+            if (next == '\0')
+            {
+                parseError = true;
+                return str;
+            }
+
+            std::string escaped = "\\" + std::string(1, next);
+            str += escaped;
+            continue; 
+        }
 
         str += next;
     }

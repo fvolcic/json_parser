@@ -11,11 +11,13 @@ TEST(parse_string_test)
 
 TEST(parse_string_test_2)
 {
-    std::string str = "\"hello \\\"world\n\\\"\""; // 'hello "world\n"'
+    std::string str = "\"hello \\\"world\\n\\\"\""; // 'hello "world\n"'
+    std::cout << str << std::endl;
     StringBuffer buffer(str);
     std::string value = parseString(buffer);
-    ASSERT_EQUAL(value, "hello \"world\n\"");
+    ASSERT_EQUAL(value, "hello \\\"world\\n\\\"");
 }
+
 
 TEST(parse_empty_string)
 {
