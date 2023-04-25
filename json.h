@@ -52,6 +52,10 @@ public:
     inline StringBuffer(const std::string &str)
         : str(str), index(0){};
 
+    inline StringBuffer(const char *str)
+        : str(std::string(str)), index(0){
+        }
+    
     inline char next()
     {
         if (index >= str.length())
@@ -314,9 +318,9 @@ public:
         return nullptr;
     };
 
-    virtual std::vector<JsonData *> asArray()
+    virtual std::vector<JsonData *> * asArray()
     {
-        return std::vector<JsonData *>();
+        return nullptr;
     };
 
     virtual JsonData *operator[](const std::string &key)
@@ -593,9 +597,9 @@ public:
         buffer.next(); // skip ']'
     };
 
-    inline std::vector<JsonData *> asArray() override
+    inline std::vector<JsonData *>* asArray() override
     {
-        return data;
+        return &data;
     };
 
     inline JsonData *operator[](int index) override
@@ -793,7 +797,7 @@ private:
 
 inline JsonData *parseToJsonData(StringBuffer &buffer)
 {
-
+    
     parseError = false;
 
     buffer.skipWhitespace(); // skip whitespace
@@ -840,7 +844,8 @@ inline JsonData *JSON(const std::string &str)
 
 inline JsonData *JSON(const char *str)
 {
-    StringBuffer buffer(str);
+    std::string s(str);
+    StringBuffer buffer(s);
     return parseToJsonData(buffer);
 }
 
@@ -909,12 +914,6 @@ JsonData * toJsonData(int number)
 JsonData * toJsonData(bool boolean)
 {
    return new JsonBool(boolean);
-}
-
-JsonData * operator ""_json(const char *str, size_t size)
-{
-    StringBuffer buffer(str);
-    return parseToJsonData(buffer);
 }
 
 #endif

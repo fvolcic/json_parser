@@ -157,10 +157,10 @@ TEST(parse_json_array)
     JsonData *value = parseToJsonData(buffer);
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_ARRAY);
-    ASSERT_EQUAL(value->asArray().size(), 3);
-    ASSERT_EQUAL(value->asArray()[0]->asNumber(), 1);
-    ASSERT_EQUAL(value->asArray()[1]->asNumber(), 2);
-    ASSERT_EQUAL(value->asArray()[2]->asNumber(), 3);
+    ASSERT_EQUAL(value->asArray()->size(), 3);
+    ASSERT_EQUAL((*value->asArray())[0]->asNumber(), 1);
+    ASSERT_EQUAL((*value->asArray())[1]->asNumber(), 2);
+    ASSERT_EQUAL((*value->asArray())[2]->asNumber(), 3);
 }
 
 TEST(parse_json_array2)
@@ -172,14 +172,14 @@ TEST(parse_json_array2)
     JsonData *value = parseToJsonData(buffer);
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_ARRAY);
-    ASSERT_EQUAL(value->asArray().size(), 4);
-    ASSERT_EQUAL(value->asArray()[0]->asNumber(), 1);
-    ASSERT_EQUAL(value->asArray()[1]->asNumber(), 2);
-    ASSERT_EQUAL(value->asArray()[2]->asNumber(), 3);
-    ASSERT_EQUAL(value->asArray()[3]->asArray().size(), 3);
-    ASSERT_EQUAL(value->asArray()[3]->asArray()[0]->asNumber(), 4);
-    ASSERT_EQUAL(value->asArray()[3]->asArray()[1]->asNumber(), 5);
-    ASSERT_EQUAL(value->asArray()[3]->asArray()[2]->asNumber(), 6);
+    ASSERT_EQUAL((*value->asArray()).size(), 4);
+    ASSERT_EQUAL((*value->asArray())[0]->asNumber(), 1);
+    ASSERT_EQUAL((*value->asArray())[1]->asNumber(), 2);
+    ASSERT_EQUAL((*value->asArray())[2]->asNumber(), 3);
+    ASSERT_EQUAL((*value->asArray())[3]->asArray()->size(), 3);
+    ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](0)->asNumber(), 4);
+    ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](1)->asNumber(), 5);
+    ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](2)->asNumber(), 6);
 }
 
 TEST(parse_json_object)
@@ -226,10 +226,10 @@ TEST(parse_json_object3)
     ASSERT_EQUAL(value->asObject()->operator[]("age")->asNumber(), 18);
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("city")->asString(), "beijing");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("country")->asString(), "china");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray().size(), 3);
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[0]->asString(), "a");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[1]->asString(), "b");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[2]->asString(), "c");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->size(), 3);
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](0)->asString(), "a");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](1)->asString(), "b");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](2)->asString(), "c");
 }
 
 TEST(parse_json_object4_array_of_objects)
@@ -246,10 +246,10 @@ TEST(parse_json_object4_array_of_objects)
     ASSERT_EQUAL(value->asObject()->operator[]("age")->asNumber(), 18);
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("city")->asString(), "beijing");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("country")->asString(), "china");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray().size(), 3);
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[0]->asObject()->operator[]("name")->asString(), "a");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[1]->asObject()->operator[]("name")->asString(), "b");
-    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[2]->asObject()->operator[]("name")->asString(), "c");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->size(), 3);
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](0)->asObject()->operator[]("name")->asString(), "a");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](1)->asObject()->operator[]("name")->asString(), "b");
+    ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](2)->asObject()->operator[]("name")->asString(), "c");
 }
 
 TEST(parse_and_emit)
@@ -272,24 +272,15 @@ TEST(parse_and_emit)
     ASSERT_EQUAL(value2->asObject()->operator[]("age")->asNumber(), 18);
     ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("city")->asString(), "beijing");
     ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("country")->asString(), "china");
-    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray().size(), 3);
-    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[0]->asObject()->operator[]("name")->asString(), "a");
-    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[1]->asObject()->operator[]("name")->asString(), "b");
-    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()[2]->asObject()->operator[]("name")->asString(), "c");
+    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->size(), 3);
+    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](0)->asObject()->operator[]("name")->asString(), "a");
+    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](1)->asObject()->operator[]("name")->asString(), "b");
+    ASSERT_EQUAL(value2->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](2)->operator[]("name")->asString(), "c");
 
     JSON_dumpf(value2, "test.json");
 
 }
 
-TEST(json_literal){
-    
-    auto value = "{'test':3}"_json; // parse json literal
-
-    ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
-    ASSERT_EQUAL(value->size(), 1);
-    ASSERT_EQUAL(value->asObject()->operator[]("test")->asNumber(), 3);
-
-}
 
 TEST(json_create_object){
     auto value = new JsonObject();
@@ -301,29 +292,33 @@ TEST(json_create_object){
     ASSERT_EQUAL(value->asObject()->operator[]("test")->asNumber(), 4);
 }
 
-// TEST(json_push_pop){
-//     auto value = "{'arr':[1, 2, 3]}"_json; // parse json literal
+TEST(json_push_pop){
+    auto value = JSON("{'arr':[1, 2, 3]}"); // parse json literal
 
-//     value->get("arr")->asArray().push_back(toJsonData(4));
-//     value->get("arr")->asArray().push_back(toJsonData(5));
+    std::cout << "LENGTH: " << value->get("arr")->asArray()->size() << std::endl; 
 
-//     ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
-//     ASSERT_EQUAL(value->size(), 5);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[4]->asNumber(), 5);
+    value->get("arr")->asArray()->push_back(toJsonData(4));
+    value->get("arr")->asArray()->push_back(toJsonData(5));
 
-//     value->get("arr")->asArray().pop_back();
+    std::cout << "LENGTH: " << value->get("arr")->asArray()->size() << std::endl; 
 
-//     ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
-//     ASSERT_EQUAL(value->size(), 4);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[0]->asNumber(), 1);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[1]->asNumber(), 2);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[2]->asNumber(), 3);
-//     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()[3]->asNumber(), 4);
+    ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
+    ASSERT_EQUAL(value->get("arr")->asArray()->size(), 5);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](0)->asNumber(), 1);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](1)->asNumber(), 2);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](2)->asNumber(), 3);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](3)->asNumber(), 4);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](4)->asNumber(), 5);
 
-// }
+    value->get("arr")->asArray()->pop_back();
+
+    ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
+    ASSERT_EQUAL(value->get("arr")->asArray()->size(), 4);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](0)->asNumber(), 1);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](1)->asNumber(), 2);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](2)->asNumber(), 3);
+    ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](3)->asNumber(), 4);
+
+}
 
 TEST_MAIN()
