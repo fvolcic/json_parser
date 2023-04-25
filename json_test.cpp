@@ -101,6 +101,8 @@ TEST(parse_json_number)
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_NUMBER);
     ASSERT_EQUAL(value->asNumber(), 123);
+
+    delete value;
 }
 
 TEST(parse_json_string)
@@ -113,6 +115,8 @@ TEST(parse_json_string)
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_STRING);
     ASSERT_EQUAL(value->asString(), "hello world");
+
+    delete value;
 }
 
 TEST(parse_json_string2){
@@ -122,6 +126,8 @@ TEST(parse_json_string2){
     JsonData * value = parseToJsonData(buffer);
     ASSERT_EQUAL(value->getType(), JsonType::JSON_STRING);
     ASSERT_EQUAL(value->asString(), "'");
+
+    delete value;
 }
 
 TEST(parse_json_bool)
@@ -134,6 +140,8 @@ TEST(parse_json_bool)
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_BOOL);
     ASSERT_EQUAL(value->asBool(), true);
+
+    delete value;
 }
 
 TEST(parse_json_bool_2)
@@ -146,6 +154,8 @@ TEST(parse_json_bool_2)
 
     ASSERT_EQUAL(value->getType(), JsonType::JSON_BOOL);
     ASSERT_EQUAL(value->asBool(), false);
+
+    delete value;
 }
 
 TEST(parse_json_array)
@@ -161,6 +171,8 @@ TEST(parse_json_array)
     ASSERT_EQUAL((*value->asArray())[0]->asNumber(), 1);
     ASSERT_EQUAL((*value->asArray())[1]->asNumber(), 2);
     ASSERT_EQUAL((*value->asArray())[2]->asNumber(), 3);
+
+    delete value;
 }
 
 TEST(parse_json_array2)
@@ -180,6 +192,8 @@ TEST(parse_json_array2)
     ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](0)->asNumber(), 4);
     ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](1)->asNumber(), 5);
     ASSERT_EQUAL((*value->asArray())[3]->asArray()->operator[](2)->asNumber(), 6);
+
+    delete value;
 }
 
 TEST(parse_json_object)
@@ -194,6 +208,8 @@ TEST(parse_json_object)
     ASSERT_EQUAL(value->size(), 2);
     ASSERT_EQUAL(value->asObject()->operator[]("name")->asString(), "hello world");
     ASSERT_EQUAL(value->asObject()->operator[]("age")->asNumber(), 18);
+
+    delete value;
 }
 
 TEST(parse_json_object2)
@@ -210,6 +226,8 @@ TEST(parse_json_object2)
     ASSERT_EQUAL(value->asObject()->operator[]("age")->asNumber(), 18);
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("city")->asString(), "beijing");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("country")->asString(), "china");
+
+    delete value;
 }
 
 TEST(parse_json_object3)
@@ -230,6 +248,8 @@ TEST(parse_json_object3)
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](0)->asString(), "a");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](1)->asString(), "b");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](2)->asString(), "c");
+
+    delete value;
 }
 
 TEST(parse_json_object4_array_of_objects)
@@ -250,6 +270,8 @@ TEST(parse_json_object4_array_of_objects)
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](0)->asObject()->operator[]("name")->asString(), "a");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](1)->asObject()->operator[]("name")->asString(), "b");
     ASSERT_EQUAL(value->asObject()->operator[]("address")->asObject()->operator[]("street")->asArray()->operator[](2)->asObject()->operator[]("name")->asString(), "c");
+
+    delete value;
 }
 
 TEST(parse_and_emit)
@@ -279,6 +301,9 @@ TEST(parse_and_emit)
 
     JSON_dumpf(value2, "test.json");
 
+    delete value;
+    delete value2;
+
 }
 
 
@@ -290,6 +315,8 @@ TEST(json_create_object){
     ASSERT_EQUAL(value->getType(), JsonType::JSON_OBJECT);
     ASSERT_EQUAL(value->size(), 1);
     ASSERT_EQUAL(value->asObject()->operator[]("test")->asNumber(), 4);
+
+    delete value;
 }
 
 TEST(json_push_pop){
@@ -318,6 +345,8 @@ TEST(json_push_pop){
     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](1)->asNumber(), 2);
     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](2)->asNumber(), 3);
     ASSERT_EQUAL(value->asObject()->operator[]("arr")->asArray()->operator[](3)->asNumber(), 4);
+
+    delete value;
 
 }
 
