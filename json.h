@@ -22,7 +22,6 @@ JsonData *parseToJsonData(StringBuffer &buffer);
 static bool parseError = false;
 static std::string parseErrorString = "";
 
-
 bool hasError()
 {
     return parseError;
@@ -46,16 +45,16 @@ enum class JsonType
 class StringBuffer
 {
 public:
-
     inline StringBuffer() : str(""), index(0){};
 
     inline StringBuffer(const std::string &str)
         : str(str), index(0){};
 
     inline StringBuffer(const char *str)
-        : str(std::string(str)), index(0){
-        }
-    
+        : str(std::string(str)), index(0)
+    {
+    }
+
     inline char next()
     {
         if (index >= str.length())
@@ -84,7 +83,8 @@ private:
 };
 static StringBuffer emptyBuffer;
 
-inline bool isWhitespace(char c){
+inline bool isWhitespace(char c)
+{
     return c == ' ' || c == '\n' || c == '\t' || c == '\r';
 }
 
@@ -93,29 +93,6 @@ inline bool isDelimiter(char c)
 
     return isWhitespace(c) || c == '}' || c == ']' || c == ',';
 };
-
-inline char readEscape(char c)
-{
-    switch (c)
-    {
-    case 'b':
-        return '\b';
-    case 'f':
-        return '\f';
-    case 'n':
-        return '\n';
-    case 'r':
-        return '\r';
-    case 't':
-        return '\t';
-    case '"':
-        return '"';
-    case '\\':
-        return '\\';
-    default:
-        return '\0';
-    }
-}
 
 inline std::string parseString(StringBuffer &buffer)
 {
@@ -149,7 +126,7 @@ inline std::string parseString(StringBuffer &buffer)
 
             std::string escaped = "\\" + std::string(1, next);
             str += escaped;
-            continue; 
+            continue;
         }
 
         str += next;
@@ -222,10 +199,8 @@ inline bool parseBool(StringBuffer &buffer)
         if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
         {
             parseError = true;
-            parseError = 
-                printf("Expected value [true] followed by [delimiter] or ['\\0']. Got [%s] followed by [%c]"
-                , str.data(), buffer.peek()
-                );
+            parseError =
+                printf("Expected value [true] followed by [delimiter] or ['\\0']. Got [%s] followed by [%c]", str.data(), buffer.peek());
             return false;
         }
 
@@ -248,10 +223,8 @@ inline bool parseBool(StringBuffer &buffer)
         if (!isDelimiter(buffer.peek()) && buffer.peek() != '\0')
         {
             parseError = true;
-            parseError = 
-                printf("| Expected value [false] followed by [delimiter]. Got [%s] followed by [%c]. |"
-                , str.data(), buffer.peek()
-                );
+            parseError =
+                printf("| Expected value [false] followed by [delimiter]. Got [%s] followed by [%c]. |", str.data(), buffer.peek());
             return false;
         }
 
@@ -295,8 +268,7 @@ bool parseNull(StringBuffer &buffer)
 class JsonData
 {
 public:
-
-    JsonData(){}
+    JsonData() {}
 
     virtual std::string asString()
     {
@@ -318,7 +290,7 @@ public:
         return nullptr;
     };
 
-    virtual std::vector<JsonData *> * asArray()
+    virtual std::vector<JsonData *> *asArray()
     {
         return nullptr;
     };
@@ -397,7 +369,6 @@ public:
 class JsonString : public JsonData
 {
 public:
-
     inline JsonString(std::string str) : buffer(emptyBuffer), str(str){};
 
     inline JsonString(StringBuffer &buffer) : buffer(buffer)
@@ -437,7 +408,6 @@ private:
 class JsonNumber : public JsonData
 {
 public:
-
     inline JsonNumber(double num) : buffer(emptyBuffer), num(num){};
 
     inline JsonNumber(StringBuffer &buffer) : buffer(buffer)
@@ -477,7 +447,6 @@ private:
 class JsonBool : public JsonData
 {
 public:
-
     inline JsonBool(bool b) : buffer(emptyBuffer), b(b){};
 
     inline JsonBool(StringBuffer &buffer) : buffer(buffer)
@@ -520,7 +489,6 @@ class JsonNull : public JsonData
 {
 
 public:
-
     inline JsonNull() : buffer(emptyBuffer){};
 
     inline JsonNull(StringBuffer &buffer) : buffer(buffer)
@@ -549,7 +517,6 @@ private:
 class JsonArray : public JsonData
 {
 public:
-
     inline JsonArray() : buffer(emptyBuffer){};
 
     inline JsonArray(StringBuffer &buffer) : buffer(buffer)
@@ -597,7 +564,7 @@ public:
         buffer.next(); // skip ']'
     };
 
-    inline std::vector<JsonData *>* asArray() override
+    inline std::vector<JsonData *> *asArray() override
     {
         return &data;
     };
@@ -627,13 +594,13 @@ public:
         this->data.push_back(data);
     };
 
-    inline JsonData * pop() override
+    inline JsonData *pop() override
     {
         JsonData *data = this->data.back();
         this->data.pop_back();
         return data;
     };
- 
+
     inline ~JsonArray() override
     {
         for (auto &d : data)
@@ -664,7 +631,6 @@ class JsonObject : public JsonData
 {
 
 public:
-
     inline JsonObject() : buffer(emptyBuffer){};
 
     inline JsonObject(StringBuffer &buffer) : buffer(buffer)
@@ -682,7 +648,7 @@ public:
         return data[key];
     };
 
-    inline JsonData * set(const std::string &key, JsonData *value) override
+    inline JsonData *set(const std::string &key, JsonData *value) override
     {
         data[key] = value;
         return value;
@@ -795,45 +761,44 @@ private:
     std::map<std::string, JsonData *> data;
 };
 
+#define JSON_DATA_CASE(value, type) \
+    case value:                     \
+        return new type(buffer);
+
 inline JsonData *parseToJsonData(StringBuffer &buffer)
 {
-    
+
     parseError = false;
 
     buffer.skipWhitespace(); // skip whitespace
 
-    if (buffer.peek() == '"')
-    {
-        return new JsonString(buffer);
-    }
+    char next = buffer.peek();
 
-    if (buffer.peek() == '-' || (buffer.peek() >= '0' && buffer.peek() <= '9'))
+    switch (next)
     {
-        return new JsonNumber(buffer);
-    }
+        JSON_DATA_CASE('"', JsonString);
+        JSON_DATA_CASE('t', JsonBool);
+        JSON_DATA_CASE('f', JsonBool);
+        JSON_DATA_CASE('n', JsonNull);
+        JSON_DATA_CASE('{', JsonObject);
+        JSON_DATA_CASE('[', JsonArray);
+        JSON_DATA_CASE('-', JsonNumber);
+        JSON_DATA_CASE('0', JsonNumber);
+        JSON_DATA_CASE('1', JsonNumber);
+        JSON_DATA_CASE('2', JsonNumber);
+        JSON_DATA_CASE('3', JsonNumber);
+        JSON_DATA_CASE('4', JsonNumber);
+        JSON_DATA_CASE('5', JsonNumber);
+        JSON_DATA_CASE('6', JsonNumber);
+        JSON_DATA_CASE('7', JsonNumber);
+        JSON_DATA_CASE('8', JsonNumber);
+        JSON_DATA_CASE('9', JsonNumber);
 
-    if (buffer.peek() == 't' || buffer.peek() == 'f')
-    {
-        return new JsonBool(buffer);
+    default:
+        parseError = true;
+        parseErrorString = printf("Invalid character found: %c", next);
+        return nullptr;
     }
-
-    if (buffer.peek() == 'n')
-    {
-        return new JsonNull(buffer);
-    }
-
-    if (buffer.peek() == '{')
-    {
-        return new JsonObject(buffer);
-    }
-
-    if (buffer.peek() == '[')
-    {
-        return new JsonArray(buffer);
-    }
-
-    parseError = true;
-    return nullptr;
 }
 
 inline JsonData *JSON(const std::string &str)
@@ -891,29 +856,31 @@ inline std::string JSON_emit(JsonData *data)
     return data->emit();
 }
 
-JsonData * toJsonData(const std::string &str)
+JsonData *toJsonData(const std::string &str)
 {
-   return new JsonString(str);
+    return new JsonString(str);
 }
 
-JsonData * toJsonData(const char *str)
+JsonData *toJsonData(const char *str)
 {
-   return new JsonString(str);
+    return new JsonString(str);
 }
 
-JsonData * toJsonData(double number)
+JsonData *toJsonData(double number)
 {
-   return new JsonNumber(number);
+    return new JsonNumber(number);
 }
 
-JsonData * toJsonData(int number)
+JsonData *toJsonData(int number)
 {
-   return new JsonNumber(number);
+    return new JsonNumber(number);
 }
 
-JsonData * toJsonData(bool boolean)
+JsonData *toJsonData(bool boolean)
 {
-   return new JsonBool(boolean);
+    return new JsonBool(boolean);
 }
+
+#undef JSON_DATA_CASE
 
 #endif
